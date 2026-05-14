@@ -6,7 +6,7 @@ The main objective is to maintain a constant vehicle speed under varying road co
   Minimal overshoot
   Smooth transient response
   Stable disturbance rejection
-The vehicle dynamics are modeled using the first-order transfer function: G(s)=95s+10/1
+The vehicle dynamics are modeled using the first-order transfer function: G(s)=(5s+1)/1
 A PI controller is designed and compared with an auto-tuned PID controller to evaluate overall system performance and stability.
 Features:
   Open-loop system modeling
@@ -19,6 +19,7 @@ Features:
   Multiple road slope disturbance scenarios
   Bode plot stability analysis
   Nyquist stability verification
+  Root Locus Analysis
   Final controller performance summary
 Dependencies
   MATLAB R2021a or later
@@ -32,21 +33,22 @@ Dependencies
   nyquist() → Nyquist stability analysis
   lsim() → Disturbance simulation
   pidtune() → Automatic PID tuning
-  Project Approach
+  
+PROJECT APPROACH
 1. System Modeling
   The EV dynamics are represented using a first-order transfer function.
-  System inputs and outputs:
-  Input → Throttle control
-  Output → Vehicle speed
+   System inputs and outputs:
+    Input → Throttle control
+    Output → Vehicle speed
   The open-loop response is analyzed first to understand the natural behavior of the system.
 2. PI Controller Design
   A PI controller is designed with the following tuned gains:
-  Kp=9, Ki=2
-  The controller is selected to:
-  Reduce steady-state error
-  Improve transient response
-  Maintain system stability
-  Keep overshoot below 5%
+    Kp=9, Ki=2
+    The controller is selected to:
+    Reduce steady-state error
+    Improve transient response
+    Maintain system stability
+    Keep overshoot below 5%
 3. Closed-Loop Analysis
   The PI controller is connected in a unity feedback configuration.
   The closed-loop step response is analyzed to evaluate:
@@ -93,24 +95,31 @@ Dependencies
   Gain margin
   Phase margin
   Robustness characteristics
-  Nyquist Stability Analysis
+7. Nyquist Stability Analysis
   Nyquist plots are used to verify closed-loop stability.
   Stability is confirmed by ensuring that the Nyquist curve does not encircle the critical point (−1,0).
   The analysis confirms:
     Stable closed-loop operation
     Good robustness margins
     Reliable controller performance
-Performance Summary
+8. Root Locus Analysis
+   Root locus analysis is used to study the movement of closed-loop poles as controller gain varies.
+   It verifies system stability and controller effectiveness.
+   The compensated system confirms that the selected gain:  Kp=9
+   Places all poles in the Left Half Plane (LHP), ensuring stable operation.
+   The analysis compares uncompensated and compensated system behavior.
+   Root locus results confirm improved stability and transient response with the PI controller.
+9. Performance Summary
   The final PI-controlled cruise control system successfully achieves:
   Steady-state error < 2%
   Overshoot < 5%
   Smooth transient response
   Stable disturbance rejection
   Robust closed-loop stability
+
 CONCLUSION
-This project demonstrates the successful design of an Electric Vehicle Cruise Control System using classical control engineering techniques.
-Through controller tuning, disturbance analysis, gain sensitivity testing, and stability verification, the system achieves reliable and stable speed regulation under varying operating conditions.
-The final PI controller provides an effective balance between simplicity, stability, and performance.
+  This project demonstrates the successful design of an Electric Vehicle Cruise Control System using classical control         engineering techniques.
+  Through controller tuning, disturbance analysis, gain sensitivity testing, root locus analysis, and stability verification   using Bode and Nyquist methods, the system achieves reliable and stable speed regulation under varying operating             conditions.
 
 %% ============================================================
 %  ELECTRIC VEHICLE CRUISE CONTROL SYSTEM
@@ -133,6 +142,7 @@ The final PI controller provides an effective balance between simplicity, stabil
 %  ✓ Multiple Road Slope Disturbances
 %  ✓ Bode Plot Stability Analysis
 %  ✓ Nyquist Stability Verification
+%  ✓ Root Locus Analysis
 %  ✓ Final Performance Summary
 %
 %% ============================================================
@@ -683,6 +693,151 @@ fprintf('\n>> CONCLUSION: Nyquist plot confirms closed-loop\n');
 fprintf('   stability. The critical point (-1,0) is NOT\n');
 fprintf('   encircled — system is robustly stable.\n');
 
+%% ============================================================
+%  SECTION 16B : ROOT LOCUS ANALYSIS
+%  Shows how closed-loop poles move as gain increases
+%  Verifies that Kp = 9 places poles in stable region
+%% ============================================================
+
+%% ---- Plot 1: Root Locus of Compensated System ----
+
+figure(9);
+rlocus(C * G);
+grid on;
+title('Figure 9: Root Locus — Compensated System C(s)·G(s)', ...
+      'FontSize', 13, 'FontWeight', 'bold');
+xlabel('Real Axis', 'FontSize', 11);
+ylabel('Imaginary Axis', 'FontSize', 11);
+set(gcf, 'Color', 'white');
+
+% ---- Mark closed-loop poles at Kp=9 ----
+hold on;
+
+poles_cl = pole(T);         % Closed-loop poles at Kp=9
+poles_ol = pole(C * G);     % Open-loop poles
+zeros_ol = zero(C * G);     % Open-loop zeros
+
+% Green stars = closed loop poles at Kp=9
+plot(real(poles_cl), imag(poles_cl), 'g*', ...
+     'MarkerSize', 15, 'LineWidth', 2, ...
+     'DisplayName', 'Closed-Loop Poles at Kp=9');
+
+% Red X = open loop poles
+plot(real(poles_ol), imag(poles_ol), 'rx', ...
+     'MarkerSize', 12, 'LineWidth', 2, ...
+     'DisplayName', 'Open-Loop Poles');
+
+% Blue circles = open loop zeros
+plot(real(zeros_ol), imag(zeros_ol), 'bo', ...
+     'MarkerSize', 12, 'LineWidth', 2, ...
+     'DisplayName', 'Open-Loop Zeros');
+
+legend('Root Locus', ...
+       'Closed-Loop Poles (Kp=9)', ...
+       'Open-Loop Poles', ...
+       'Open-Loop Zeros', ...
+       'Location', 'northwest', 'FontSize', 9);
+hold off;
+
+%% ---- Plot 2: Uncompensated vs Compensated ----
+
+figure(10);
+
+% Left plot — Plant only (no controller)
+subplot(1, 2, 1);
+rlocus(G);
+grid on;
+title('Uncompensated G(s)', ...
+      'FontSize', 12, 'FontWeight', 'bold');
+xlabel('Real Axis');
+ylabel('Imaginary Axis');
+
+% Right plot — With PI controller
+subplot(1, 2, 2);
+rlocus(C * G);
+grid on;
+title('Compensated C(s)·G(s)', ...
+      'FontSize', 12, 'FontWeight', 'bold');
+xlabel('Real Axis');
+ylabel('Imaginary Axis');
+
+sgtitle('Figure 10: Root Locus — Before vs After PI Controller', ...
+        'FontSize', 13, 'FontWeight', 'bold');
+set(gcf, 'Color', 'white');
+
+%% ---- Print Pole Analysis ----
+
+fprintf('\n=================================================\n');
+fprintf('ROOT LOCUS ANALYSIS\n');
+fprintf('=================================================\n');
+
+% Open-loop poles
+fprintf('\n--- Open-Loop Poles of C(s)*G(s) ---\n');
+for i = 1:length(poles_ol)
+    if imag(poles_ol(i)) == 0
+        fprintf('  Pole %d: %.4f  (Real pole)\n', ...
+                i, real(poles_ol(i)));
+    else
+        fprintf('  Pole %d: %.4f + %.4fi  (Complex pole)\n', ...
+                i, real(poles_ol(i)), imag(poles_ol(i)));
+    end
+end
+
+% Open-loop zeros
+fprintf('\n--- Open-Loop Zeros of C(s)*G(s) ---\n');
+for i = 1:length(zeros_ol)
+    fprintf('  Zero %d: %.4f\n', i, real(zeros_ol(i)));
+end
+
+% Closed-loop poles at Kp=9
+fprintf('\n--- Closed-Loop Poles at Kp = 9 ---\n');
+all_stable = true;
+for i = 1:length(poles_cl)
+    re = real(poles_cl(i));
+    im = imag(poles_cl(i));
+    if re < 0
+        status = 'STABLE (Left Half Plane)';
+    else
+        status = 'UNSTABLE (Right Half Plane)';
+        all_stable = false;
+    end
+    fprintf('  Pole %d: %.4f + %.4fi  -->  %s\n', ...
+            i, re, im, status);
+end
+
+% Damping ratio and natural frequency
+fprintf('\n--- Pole Characteristics ---\n');
+for i = 1:length(poles_cl)
+    wn   = abs(poles_cl(i));
+    zeta = -real(poles_cl(i)) / wn;
+    fprintf('  Pole %d: wn = %.4f rad/s  |  zeta = %.4f', ...
+            i, wn, zeta);
+    if zeta >= 1
+        fprintf('  (Overdamped)\n');
+    elseif zeta > 0
+        fprintf('  (Underdamped)\n');
+    else
+        fprintf('  (Undamped)\n');
+    end
+end
+
+% Overall verdict
+fprintf('\n--- Root Locus Verdict ---\n');
+if all_stable
+    fprintf('[PASS] All closed-loop poles in Left Half Plane\n');
+    fprintf('[PASS] System is STABLE at Kp = 9\n');
+else
+    fprintf('[FAIL] Unstable poles detected — retune Kp\n');
+end
+
+fprintf('\n>> CONCLUSION:\n');
+fprintf('   Poles in Left Half Plane  = STABLE\n');
+fprintf('   Poles in Right Half Plane = UNSTABLE\n');
+fprintf('   At Kp=9, all poles in LHP = System stable\n');
+
+%% ============================================================
+%  SECTION 17 : FINAL SUMMARY        ← this line already exists
+%% ============================================================
 %% ============================================================
 %  SECTION 17 : FINAL SUMMARY
 %% ============================================================
