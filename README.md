@@ -43,7 +43,7 @@ PROJECT APPROACH
   The open-loop response is analyzed first to understand the natural behavior of the system.
 2. PI Controller Design
   A PI controller is designed with the following tuned gains:
-    Kp=9, Ki=2
+    Kp=120, Ki=150
     The controller is selected to:
     Reduce steady-state error
     Improve transient response
@@ -105,7 +105,7 @@ PROJECT APPROACH
 8. Root Locus Analysis
    Root locus analysis is used to study the movement of closed-loop poles as controller gain varies.
    It verifies system stability and controller effectiveness.
-   The compensated system confirms that the selected gain:  Kp=9
+   The compensated system confirms that the selected gain:  Kp=120
    Places all poles in the Left Half Plane (LHP), ensuring stable operation.
    The analysis compares uncompensated and compensated system behavior.
    Root locus results confirm improved stability and transient response with the PI controller.
